@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Previsão do Tempo</title>
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Previsão do Tempo</h1>
+    <p class="subtitulo">Consulte o clima de qualquer cidade do mundo</p>
+
+    <form id="form-busca" class="form-busca" autocomplete="off">
+      <input
+        type="text"
+        id="input-cidade"
+        placeholder="Digite o nome da cidade (ex: São Paulo)"
+        aria-label="Nome da cidade"
+        required
+      />
+      <button type="submit" id="btn-buscar">Buscar</button>
+    </form>
+
+    <div id="mensagem" class="mensagem" hidden></div>
+
+    <section id="resultado" class="resultado" hidden>
+      <div class="local-info">
+        <h2 id="nome-local"></h2>
+        <span id="pais-local"></span>
+      </div>
+
+      <div class="clima-atual">
+        <div class="temperatura-principal">
+          <span id="icone-atual" class="icone-clima"></span>
+          <span id="temp-atual" class="temp-valor"></span>
+        </div>
+        <p id="descricao-atual" class="descricao-clima"></p>
+        <div class="detalhes-grid">
+          <div class="detalhe-item">
+            <span class="detalhe-label">Velocidade do vento</span>
+            <span id="vento" class="detalhe-valor"></span>
+          </div>
+          <div class="detalhe-item">
+            <span class="detalhe-label">Direção do vento</span>
+            <span id="direcao-vento" class="detalhe-valor"></span>
+          </div>
+          <div class="detalhe-item">
+            <span class="detalhe-label">Fuso horário</span>
+            <span id="fuso-horario" class="detalhe-valor"></span>
+          </div>
+          <div class="detalhe-item">
+            <span class="detalhe-label">Medição em</span>
+            <span id="horario-medicao" class="detalhe-valor"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="previsao-diaria">
+        <h3>Próximos dias</h3>
+        <div id="lista-previsao" class="lista-previsao"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="./assets/script.js"></script>
+</body>
+</html>
