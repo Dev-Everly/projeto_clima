@@ -1,14 +1,32 @@
 :root {
-  --cor-fundo: #eef3fb;
+  /* Tema claro (dia) — aplicado por padrão */
+  --cor-fundo-inicio: #dbeafe;
+  --cor-fundo-fim: #eef3fb;
   --cor-card: #ffffff;
   --cor-primaria: #2563eb;
   --cor-primaria-escura: #1d4ed8;
   --cor-texto: #1e293b;
   --cor-texto-suave: #64748b;
   --cor-borda: #e2e8f0;
+  --cor-detalhe-fundo: #eef3fb;
   --cor-erro: #dc2626;
   --raio: 14px;
   --sombra: 0 10px 30px rgba(30, 41, 59, 0.08);
+  --transicao-tema: background 0.4s ease, color 0.4s ease;
+}
+
+/* Tema escuro (noite) — aplicado dinamicamente via JS com base no is_day da API */
+body.tema-noite {
+  --cor-fundo-inicio: #0f172a;
+  --cor-fundo-fim: #1e293b;
+  --cor-card: #1e293b;
+  --cor-primaria: #3b82f6;
+  --cor-primaria-escura: #2563eb;
+  --cor-texto: #f1f5f9;
+  --cor-texto-suave: #94a3b8;
+  --cor-borda: #334155;
+  --cor-detalhe-fundo: #0f172a;
+  --sombra: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -19,9 +37,10 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background: linear-gradient(135deg, #dbeafe, #eef3fb 60%);
+  background: linear-gradient(135deg, var(--cor-fundo-inicio), var(--cor-fundo-fim) 60%);
   color: var(--cor-texto);
   padding: 24px 16px;
+  transition: var(--transicao-tema);
 }
 
 .container {
@@ -56,6 +75,8 @@ h1 {
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
+  background: var(--cor-card);
+  color: var(--cor-texto);
 }
 
 #input-cidade:focus {
@@ -99,7 +120,7 @@ h1 {
 
 .mensagem.carregando {
   background: #dbeafe;
-  color: var(--cor-primaria-escura);
+  color: #1d4ed8;
 }
 
 .resultado {
@@ -107,6 +128,7 @@ h1 {
   border-radius: var(--raio);
   box-shadow: var(--sombra);
   padding: 24px;
+  transition: var(--transicao-tema);
 }
 
 .local-info {
@@ -122,6 +144,13 @@ h1 {
 .local-info span {
   color: var(--cor-texto-suave);
   font-size: 0.9rem;
+}
+
+.data-consulta {
+  color: var(--cor-texto-suave);
+  font-size: 0.85rem;
+  margin: 6px 0 0;
+  text-transform: capitalize;
 }
 
 .clima-atual {
@@ -141,6 +170,7 @@ h1 {
 .icone-clima {
   font-size: 3rem;
   line-height: 1;
+  color: var(--cor-primaria);
 }
 
 .temp-valor {
@@ -161,12 +191,13 @@ h1 {
 }
 
 .detalhe-item {
-  background: var(--cor-fundo);
+  background: var(--cor-detalhe-fundo);
   border-radius: 10px;
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  transition: var(--transicao-tema);
 }
 
 .detalhe-label {
@@ -194,10 +225,34 @@ h1 {
 .dia-card {
   flex: 0 0 auto;
   min-width: 92px;
-  background: var(--cor-fundo);
+  background: var(--cor-detalhe-fundo);
   border-radius: 10px;
   padding: 12px 10px;
   text-align: center;
+  cursor: pointer;
+  /* border transparente por padrão, pra não deslocar o layout quando ganhar cor */
+  border: 2px solid transparent;
+  transition: var(--transicao-tema), border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Efeito ao passar o mouse (ou focar via teclado) sobre um card */
+.dia-card:hover,
+.dia-card:focus-visible {
+  border-color: var(--cor-primaria);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.18);
+  outline: none;
+}
+
+/* Card selecionado (clicado) — fica destacado mesmo sem o mouse em cima */
+.dia-card.dia-card--selecionado {
+  border-color: var(--cor-primaria);
+  background: color-mix(in srgb, var(--cor-primaria) 12%, var(--cor-detalhe-fundo));
+}
+
+.dia-card.dia-card--selecionado .dia-nome {
+  color: var(--cor-primaria);
+  font-weight: 600;
 }
 
 .dia-card .dia-nome {
@@ -212,6 +267,7 @@ h1 {
   font-size: 1.6rem;
   display: block;
   margin-bottom: 6px;
+  color: var(--cor-primaria);
 }
 
 .dia-card .dia-temps {
