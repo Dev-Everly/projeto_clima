@@ -110,25 +110,30 @@ async function buscarCoordenadas(nomeCidade) {
   url.searchParams.set('count', '1');
   url.searchParams.set('language', 'pt');
   url.searchParams.set('format', 'json');
-
+ 
   const resposta = await fetchComTimeout(url.toString());
-
+ 
   if (!resposta.ok) {
     throw new WeatherError('falha_api', 502, 'O serviço de geocodificação da Open-Meteo está indisponível no momento. Tente novamente em instantes.');
   }
-
+ 
   let dados;
   try {
     dados = await resposta.json();
   } catch {
     throw new WeatherError('falha_api', 502, 'O serviço de geocodificação retornou uma resposta inválida.');
   }
-
-  if (!dados.results || dados.results.length === 0) {
+ 
+  if (!Array.isArray(dados.results)) {
+    // A API respondeu OK, mas em um formato totalmente diferente do esperado
+    throw new WeatherError('falha_api', 502, 'A resposta da API de geocodificação veio em um formato inesperado.');
+  }
+ 
+  if (dados.results.length === 0) {
     // Cidade não encontrada = nome inválido/inexistente
     throw new WeatherError('cidade_invalida', 404, `Não encontramos nenhuma cidade chamada "${nomeCidade}". Verifique a grafia e tente novamente.`);
   }
-
+ 
   const local = dados.results[0];
   return {
     nome: local.name,
@@ -138,7 +143,6 @@ async function buscarCoordenadas(nomeCidade) {
     longitude: local.longitude,
   };
 }
-
 /**
  * Busca os dados de previsão do tempo para uma coordenada,
  * usando o parâmetro current_weather=true da Open-Meteo.
@@ -219,17 +223,44 @@ async function handleWeatherRequest(req, res, query) {
   }
 }
 
-const server = http.createServer(async (req, res) => {
-  const requestUrl = new URL(req.url, `http://${req.headers.host}`);
-
-  if (requestUrl.pathname === '/api/weather' && req.method === 'GET') {
-    await handleWeatherRequest(req, res, requestUrl.searchParams);
-    return;
-  }
-
-  serveStaticFile(req, res);
-});
-
-server.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
-});
+/**
+ * Cria e inicia o servidor HTTP. Fica separado em função própria para que
+ * os testes (Jest) possam importar as funções deste arquivo com `require()`
+ * SEM que isso já suba um servidor de verdade ocupando a porta 3000.
+ */
+function iniciarServidor() {
+  const server = http.createServer(async (req, res) => {
+    const requestUrl = new URL(req.url, `http://${req.headers.host}`);
+ 
+    if (requestUrl.pathname === '/api/weather' && req.method === 'GET') {
+      await handleWeatherRequest(req, res, requestUrl.searchParams);
+      return;
+    }
+ 
+    serveStaticFile(req, res);
+  });
+ 
+  server.listen(PORT, () => {
+    console.log(`Servidor rodando em http://localhost:${PORT}`);
+  });
+ 
+  return server;
+}
+ 
+// Só inicia o servidor de verdade quando este arquivo é executado
+// diretamente (ex: "node server.js"), e não quando é importado
+// por outro arquivo via require() — como fazem os testes do Jest.
+if (require.main === module) {
+  iniciarServidor();
+}
+ 
+module.exports = {
+  WeatherError,
+  validarNomeCidade,
+  buscarCoordenadas,
+  buscarPrevisao,
+  fetchComTimeout,
+  handleWeatherRequest,
+  sendJSON,
+  iniciarServidor,
+};
