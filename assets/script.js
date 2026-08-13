@@ -43,6 +43,11 @@ const elResultado = document.getElementById('resultado');
 // buscar tudo de novo na API.
 let ultimaConsulta = null;
 
+// Guarda o controller da requisição em andamento, para poder cancelá-la
+// se o usuário disparar uma nova busca antes da anterior terminar
+// (evita respostas chegando fora de ordem / condição de corrida).
+let controllerEmAndamento = null;
+
 form.addEventListener('submit', async (evento) => {
   evento.preventDefault();
   const cidade = inputCidade.value.trim();
@@ -56,12 +61,26 @@ form.addEventListener('submit', async (evento) => {
 });
 
 async function buscarClima(cidade) {
+  // Cancela qualquer busca anterior ainda pendente, antes de iniciar esta
+  if (controllerEmAndamento) {
+    controllerEmAndamento.abort();
+  }
+  const controllerAtual = new AbortController();
+  controllerEmAndamento = controllerAtual;
+
   mostrarCarregando();
 
   let resposta;
   try {
-    resposta = await fetch(`/api/weather?city=${encodeURIComponent(cidade)}`);
+    resposta = await fetch(`/api/weather?city=${encodeURIComponent(cidade)}`, {
+      signal: controllerAtual.signal,
+    });
   } catch (erro) {
+    if (erro.name === 'AbortError') {
+      // Essa busca foi cancelada porque uma mais nova começou — não faz nada,
+      // a busca mais recente é quem vai atualizar a tela.
+      return;
+    }
     // fetch lança exceção quando não há rede, DNS falha, ou o servidor caiu
     console.error('Erro de rede:', erro);
     mostrarErro('Não foi possível conectar ao servidor. Verifique sua conexão com a internet e se o servidor está rodando.');
@@ -271,10 +290,10 @@ function renderizarPrevisaoDiaria(diario) {
   diario.time.forEach((dataISO, index) => {
     const data = new Date(dataISO + 'T00:00:00');
     const nomeDia = index === 0 ? 'Hoje' : DIAS_SEMANA[data.getDay()];
-    const codigo = diario.weathercode[index];
+    const codigo = diario.weathercode?.[index];
     const info = WEATHER_CODES[codigo] || { dia: 'wi-na', descricao: '' };
-    const tempMax = Math.round(diario.temperature_2m_max[index]);
-    const tempMin = Math.round(diario.temperature_2m_min[index]);
+    const tempMax = Math.round(diario.temperature_2m_max?.[index]);
+    const tempMin = Math.round(diario.temperature_2m_min?.[index]);
 
     const card = document.createElement('div');
     card.className = 'dia-card';

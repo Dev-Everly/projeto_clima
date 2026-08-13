@@ -114,13 +114,13 @@ h1 {
 }
 
 .mensagem.erro {
-  background: #fee2e2;
+  background: rgba(220, 38, 38, 0.15);
   color: var(--cor-erro);
 }
 
 .mensagem.carregando {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.15);
+  color: var(--cor-primaria);
 }
 
 .resultado {
@@ -235,18 +235,20 @@ h1 {
   transition: var(--transicao-tema), border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Efeito ao passar o mouse (ou focar via teclado) sobre um card */
+/* Efeito ao passar o mouse (ou focar via teclado) sobre um card — prévia, ainda não selecionado */
 .dia-card:hover,
 .dia-card:focus-visible {
-  border-color: var(--cor-primaria);
+  border-color: var(--cor-texto-suave);
   transform: translateY(-3px);
   box-shadow: 0 6px 14px rgba(37, 99, 235, 0.18);
   outline: none;
 }
 
-/* Card selecionado (clicado) — fica destacado mesmo sem o mouse em cima */
+/* Card selecionado (clicado) — fica destacado mesmo sem o mouse em cima.
+   Cor sólida como fallback para navegadores sem suporte a color-mix(). */
 .dia-card.dia-card--selecionado {
   border-color: var(--cor-primaria);
+  background: var(--cor-detalhe-fundo);
   background: color-mix(in srgb, var(--cor-primaria) 12%, var(--cor-detalhe-fundo));
 }
 
